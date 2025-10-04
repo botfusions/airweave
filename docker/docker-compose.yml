@@ -1,6 +1,5 @@
 # docker-compose.yml
-# Coolify deployment - Supabase entegreli
-# Temporal devre dışı (ihtiyaç duyulursa sonra eklenebilir)
+# Coolify deployment - Supabase network entegreli
 
 services:
   redis:
@@ -16,6 +15,8 @@ services:
       timeout: 5s
       retries: 5
     restart: on-failure
+    networks:
+      - default
 
   backend:
     container_name: airweave-backend
@@ -23,19 +24,19 @@ services:
     ports:
       - "8001:8001"
     environment:
-      # Supabase PostgreSQL
-      - POSTGRES_HOST=supabase-db-d0cso0goco0swwcgc4gkgw8c
+      # Supabase PostgreSQL - Hostname kullanıyoruz
+      - POSTGRES_HOST=supabase-db
       - POSTGRES_PORT=5432
       - POSTGRES_USER=supabase_admin
       - POSTGRES_PASSWORD=PZQEkh2IrpL2CIo00gyuOzqdqnEwMT5I
       - POSTGRES_DB=postgres
-      - DATABASE_URL=postgresql://supabase_admin:PZQEkh2IrpL2CIo00gyuOzqdqnEwMT5I@supabase-db-d0cso0goco0swwcgc4gkgw8c:5432/postgres
+      - DATABASE_URL=postgresql://supabase_admin:PZQEkh2IrpL2CIo00gyuOzqdqnEwMT5I@supabase-db:5432/postgres
       
       # Redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       
-      # Qdrant
+      # Qdrant - Mevcut Qdrant
       - QDRANT_HOST=qdrant-ik4c0s48cwco4occo4kw8okg
       - QDRANT_PORT=6333
       - QDRANT_URL=http://qdrant-ik4c0s48cwco4occo4kw8okg:6333
@@ -46,11 +47,7 @@ services:
       # Environment
       - ENVIRONMENT=production
       - LOCAL_DEVELOPMENT=false
-      
-      # Temporal - DEVRE DIŞI
       - TEMPORAL_ENABLED=false
-      
-      # Auth
       - AUTH_ENABLED=false
     depends_on:
       redis:
@@ -62,6 +59,9 @@ services:
       retries: 10
       start_period: 60s
     restart: on-failure
+    networks:
+      - default
+      - supabase_network
 
   frontend:
     container_name: airweave-frontend
@@ -80,6 +80,8 @@ services:
       timeout: 10s
       retries: 3
     restart: on-failure
+    networks:
+      - default
 
   text2vec-transformers:
     container_name: airweave-embeddings
@@ -95,6 +97,13 @@ services:
       timeout: 10s
       retries: 3
     restart: on-failure
+    networks:
+      - default
+
+networks:
+  supabase_network:
+    external: true
+    name: d0cso0goco0swwcgc4gkgw8c
 
 volumes:
   redis_data:
