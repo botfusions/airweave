@@ -1,0 +1,3 @@
+# Authentication Providers Configuration
+   # Add your OAuth providers here if needed
+   providers: []
